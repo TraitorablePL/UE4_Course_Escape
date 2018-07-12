@@ -1,0 +1,9 @@
+#Unreal ignores
+Content/StarterContent/
+Build/
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+#Visual ignores
+.vs/
