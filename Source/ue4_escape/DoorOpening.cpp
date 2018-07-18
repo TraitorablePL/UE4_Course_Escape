@@ -1,7 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "DoorOpening.h"
-#include "GameFramework/Actor.h"
+#include "Engine/World.h"
+#include "Runtime/Engine/Classes/GameFramework/Actor.h"
 
 
 // Sets default values for this component's properties
@@ -18,18 +19,20 @@ UDoorOpening::UDoorOpening()
 // Called when the game starts
 void UDoorOpening::BeginPlay()
 {
-	Super::BeginPlay();
+	Super::BeginPlay();	
 
-	
+	Owner = GetOwner();
+	PlayerThatTrigger = GetWorld()->GetFirstPlayerController()->GetPawn();
 }
 
 void UDoorOpening::OpenDoor()
 {
-	AActor* Owner = GetOwner();
+	Owner->SetActorRotation(FRotator(0, OpenAngle, 0));
+}
 
-	FRotator DoorRotator = FRotator(0, -75, 0);
-
-	Owner->SetActorRotation(DoorRotator);
+void UDoorOpening::CloseDoor()
+{
+	Owner->SetActorRotation(FRotator(0, CloseAngle, 0));
 }
 
 
@@ -41,6 +44,15 @@ void UDoorOpening::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	if (PressurePlate->IsOverlappingActor(PlayerThatTrigger))
 	{
 		OpenDoor();
+		LastOpenTime = GetWorld()->GetTimeSeconds();
 	}
+	else
+	{
+		float CurrentTimeSecs = GetWorld()->GetTimeSeconds();
+		if (CurrentTimeSecs - LastOpenTime > CloseDelay) {
+			CloseDoor();
+		}
+	}
+
 }
 
