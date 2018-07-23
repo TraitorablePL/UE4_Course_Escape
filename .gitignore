@@ -1,5 +1,4 @@
 #Unreal ignores
-Content/StarterContent/
 Build/
 Binaries/
 Intermediate/
@@ -10,3 +9,6 @@ DerivedDataCache/
 Content/InfinityBladeGrassLands/
 Content/AnimStarterPack/
 Content/KiteDemo/
+Content/StarterContent/Textures/
+Content/StarterContent/HDRI/
+Content/StarterContent/Maps/
