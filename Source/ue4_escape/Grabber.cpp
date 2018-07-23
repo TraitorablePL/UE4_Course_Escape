@@ -5,8 +5,6 @@
 #include "GameFramework/Actor.h"
 #include "DrawDebugHelpers.h"
 
-
-
 // Sets default values for this component's properties
 UGrabber::UGrabber()
 {
@@ -22,8 +20,6 @@ UGrabber::UGrabber()
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
-
-	
 	// ...
 	
 }
@@ -36,7 +32,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotation;
-	float LineTraceReach = 100.0;
+	float LineTraceReach = 200.0;
 
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(PlayerViewPointLocation, PlayerViewPointRotation);
 
@@ -44,12 +40,43 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
 	DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor(0, 0, 255), false, 0, 0, 1);
 
+	/*
 	FString PlayerViewPointLocationText = PlayerViewPointLocation.ToString();
 	FString PlayerViewPointRotationText = PlayerViewPointRotation.ToString();
-	UE_LOG(LogTemp, Warning, TEXT("Viewport location: %s, rotation: %s"), 
-		*PlayerViewPointLocationText, 
+	UE_LOG(LogTemp, Warning, TEXT("Viewport location: %s, rotation: %s"),
+		*PlayerViewPointLocationText,
 		*PlayerViewPointRotationText
 	)
+	*/
+
+
+	FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
+
+	FHitResult RaycastHit;
+
+	GetWorld()->LineTraceSingleByObjectType(
+		RaycastHit,
+		PlayerViewPointLocation,
+		LineTraceEnd,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+		TraceParameters
+	);
+
+	AActor *ActorHit = RaycastHit.GetActor();
+
+	//When Unreal tries to write the result of Raycasting while noting is pointed editor is crashing
+	if (ActorHit) { 
+		UE_LOG(LogTemp, Warning, TEXT("Pointing at %s"), *ActorHit->GetName())
+	}
+	//FString ObjectName = GetOwner()->GetName();
+	//FString ObjectPos = GetOwner()->GetActorLocation().ToString();
+	//;
+
+	
+	//FTextAActor *ViewPointTarget = RaycastHit.GetActor();
+
+	//UE_LOG(LogTemp, Warning, TEXT("You're pointing at %s"), *TargetName);
+	
 	// ...
 }
 
