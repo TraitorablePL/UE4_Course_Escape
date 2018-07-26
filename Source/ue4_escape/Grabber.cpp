@@ -1,10 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Grabber.h"
-#include "Engine/World.h"
-#include "GameFramework/Actor.h"
-#include "DrawDebugHelpers.h"
-#include "PhysicsEngine/PhysicsHandleComponent.h"
 
 // Sets default values for this component's properties
 UGrabber::UGrabber()
@@ -23,11 +19,21 @@ void UGrabber::BeginPlay()
 	Super::BeginPlay();
 
 	PhysicsHandler = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 
-	OwnerName = GetOwner()->GetName();
+	if (PhysicsHandler) {
+		UE_LOG(LogTemp, Warning, TEXT("UPhysicsHandlerComponent is operational for %s"), *GetOwner()->GetName())
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Cannot find UPhysicsHandlerComponent for %s"), *GetOwner()->GetName())
+	}
 
-	if (!PhysicsHandler) {
-		UE_LOG(LogTemp, Error, TEXT("Cannot find UPhysicsHandler for %s"), *OwnerName)
+	if (InputComponent) {
+		UE_LOG(LogTemp, Warning, TEXT("UInputComponent is operational for %s"), *GetOwner()->GetName())
+		InputComponent->BindAction(TEXT("Grab"), IE_Pressed, this, &UGrabber::Grab);
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Cannot find UInputComponent for %s"), *GetOwner()->GetName())
 	}
 
 	// ...
@@ -90,5 +96,10 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	//UE_LOG(LogTemp, Warning, TEXT("You're pointing at %s"), *TargetName);
 	
 	// ...
+}
+
+void UGrabber::Grab()
+{
+
 }
 
