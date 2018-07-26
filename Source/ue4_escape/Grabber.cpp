@@ -4,6 +4,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "DrawDebugHelpers.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 
 // Sets default values for this component's properties
 UGrabber::UGrabber()
@@ -20,6 +21,15 @@ UGrabber::UGrabber()
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
+
+	PhysicsHandler = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+
+	OwnerName = GetOwner()->GetName();
+
+	if (!PhysicsHandler) {
+		UE_LOG(LogTemp, Error, TEXT("Cannot find UPhysicsHandler for %s"), *OwnerName)
+	}
+
 	// ...
 	
 }
@@ -68,6 +78,8 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	if (ActorHit) { 
 		UE_LOG(LogTemp, Warning, TEXT("Pointing at %s"), *ActorHit->GetName())
 	}
+
+	//if
 	//FString ObjectName = GetOwner()->GetName();
 	//FString ObjectPos = GetOwner()->GetActorLocation().ToString();
 	//;
