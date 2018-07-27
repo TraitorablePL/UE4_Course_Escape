@@ -57,4 +57,8 @@ private:
 
 	//Calculate and return Player viewpoint vector with reach vector
 	FTwoVectors GetLineTracers();
+
+	void PhysicsHandlerError();
+
+	void InputComponentError();
 };

@@ -20,17 +20,24 @@ UDoorOpening::UDoorOpening()
 void UDoorOpening::BeginPlay()
 {
 	Super::BeginPlay();	
-
 	Owner = GetOwner();
 }
 
 void UDoorOpening::OpenDoor()
 {
+	if (!Owner) {
+		OwnerAssigningError();
+		return;
+	}
 	Owner->SetActorRotation(FRotator(0.0f, OpenAngle, 0.0f));
 }
 
 void UDoorOpening::CloseDoor()
 {
+	if (!Owner) { 
+		OwnerAssigningError();
+		return; 
+	}
 	Owner->SetActorRotation(FRotator(0.0f, CloseAngle, 0.0f));
 }
 
@@ -58,11 +65,27 @@ float UDoorOpening::GetTotalMassOnPressurePlate()
 {
 	float TotalMass = 0.0f;
 	TArray<AActor*> ActorsOnPressurePlate;
+
+	if (!PressurePlate) {
+		PressurePlateError();
+		return TotalMass;
+	}
+
 	PressurePlate->GetOverlappingActors(OUT ActorsOnPressurePlate);
 
 	for (const auto* Actor:ActorsOnPressurePlate) {
 		TotalMass+=Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
 	}
 	return TotalMass;
+}
+
+void UDoorOpening::PressurePlateError()
+{
+	UE_LOG(LogTemp, Error, TEXT("PressurePlate for %s is not assigned"), *GetOwner()->GetName())
+}
+
+void UDoorOpening::OwnerAssigningError()
+{
+	UE_LOG(LogTemp, Error, TEXT("Owner for %s is not assigned"), *GetOwner()->GetName())
 }
 

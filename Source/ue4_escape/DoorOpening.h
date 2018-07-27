@@ -43,10 +43,10 @@ private:
 	float CloseDelay = 1.0f;
 
 	UPROPERTY(EditAnywhere)
-	ATriggerVolume *PressurePlate;
+	ATriggerVolume *PressurePlate = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
-	AActor* Owner;
+	AActor* Owner = nullptr; 
 
 	UPROPERTY(EditAnywhere)
 	float ActivationMass=50.0f;
@@ -54,5 +54,9 @@ private:
 	float LastOpenTime;
 
 	float GetTotalMassOnPressurePlate();
+
+	void PressurePlateError();
+
+	void OwnerAssigningError();
 	
 };

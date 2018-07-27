@@ -31,6 +31,11 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
 void UGrabber::GrabbedObjectMovement()
 {
+	if (!PhysicsHandler) {
+		PhysicsHandlerError();
+		return;
+	}
+
 	if (PhysicsHandler->GetGrabbedComponent())
 	{
 		//Changing grabbed object position each tick
@@ -47,7 +52,8 @@ void UGrabber::BindActionsToInputComponent()
 		InputComponent->BindAction(TEXT("Grab"), IE_Released, this, &UGrabber::Release);
 	}
 	else {
-		UE_LOG(LogTemp, Error, TEXT("Cannot find UInputComponent for %s"), *GetOwner()->GetName())
+		InputComponentError();
+		return;
 	}
 }
 
@@ -56,7 +62,8 @@ void UGrabber::FindPhysicsHandlerComponent()
 	PhysicsHandler = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
 
 	if (!PhysicsHandler) {
-		UE_LOG(LogTemp, Error, TEXT("Cannot find UPhysicsHandlerComponent for %s"), *GetOwner()->GetName())
+		PhysicsHandlerError();
+		return;
 	}
 }
 
@@ -99,6 +106,11 @@ void UGrabber::Grab()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Grab key is pressed"))
 
+	if (!PhysicsHandler) { 
+		PhysicsHandlerError();
+		return;
+	}
+
 	AActor *GrabbedActor = DetectObjectInOurReach().GetActor();
 
 	if (GrabbedActor) {
@@ -118,5 +130,21 @@ void UGrabber::Grab()
 void UGrabber::Release()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Grab key is released"))
+
+	if (!PhysicsHandler) {
+		PhysicsHandlerError();
+		return;
+	}
+
 	PhysicsHandler->ReleaseComponent();
+}
+
+void UGrabber::PhysicsHandlerError()
+{
+	UE_LOG(LogTemp, Error, TEXT("Cannot find UPhysicsHandlerComponent for %s"), *GetOwner()->GetName())
+}
+
+void UGrabber::InputComponentError()
+{
+	UE_LOG(LogTemp, Error, TEXT("Cannot find UInputComponent for %s"), *GetOwner()->GetName())
 }
