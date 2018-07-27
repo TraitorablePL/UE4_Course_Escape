@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Engine/TriggerVolume.h"
+#include "Components/PrimitiveComponent.h"
+#include "Engine/World.h"
+#include "GameFramework/Actor.h"
 #include "DoorOpening.generated.h"
 
 
@@ -31,23 +34,25 @@ public:
 private:
 
 	UPROPERTY(EditAnywhere)
-	float OpenAngle = 90;
+	float OpenAngle = 90.0f;
 
 	UPROPERTY(EditAnywhere)
-	float CloseAngle = 0;
+	float CloseAngle = 0.0f;
 
 	UPROPERTY(EditAnywhere)
-	float CloseDelay = 1;
+	float CloseDelay = 1.0f;
 
 	UPROPERTY(EditAnywhere)
 	ATriggerVolume *PressurePlate;
 
 	UPROPERTY(VisibleAnywhere)
-	AActor *PlayerThatTrigger;
-
-	UPROPERTY(VisibleAnywhere)
 	AActor* Owner;
 
+	UPROPERTY(EditAnywhere)
+	float ActivationMass=50.0f;
+
 	float LastOpenTime;
+
+	float GetTotalMassOnPressurePlate();
 	
 };
