@@ -20,27 +20,9 @@ UDoorOpening::UDoorOpening()
 void UDoorOpening::BeginPlay()
 {
 	Super::BeginPlay();	
-	Owner = GetOwner();
-}
 
-void UDoorOpening::OpenDoor()
-{
-	if (!Owner) {
-		OwnerAssigningError();
-		return;
-	}
-	Owner->SetActorRotation(FRotator(0.0f, OpenAngle, 0.0f));
+	// ...
 }
-
-void UDoorOpening::CloseDoor()
-{
-	if (!Owner) { 
-		OwnerAssigningError();
-		return; 
-	}
-	Owner->SetActorRotation(FRotator(0.0f, CloseAngle, 0.0f));
-}
-
 
 // Called every frame
 void UDoorOpening::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -49,15 +31,11 @@ void UDoorOpening::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 	if (GetTotalMassOnPressurePlate()>ActivationMass)
 	{
-		OpenDoor();
-		LastOpenTime = GetWorld()->GetTimeSeconds();
+		OnOpen.Broadcast();
 	}
 	else
 	{
-		float CurrentTimeSecs = GetWorld()->GetTimeSeconds();
-		if (CurrentTimeSecs - LastOpenTime > CloseDelay) {
-			CloseDoor();
-		}
+		OnClose.Broadcast();
 	}
 }
 
@@ -67,7 +45,7 @@ float UDoorOpening::GetTotalMassOnPressurePlate()
 	TArray<AActor*> ActorsOnPressurePlate;
 
 	if (!PressurePlate) {
-		PressurePlateError();
+		UE_LOG(LogTemp, Error, TEXT("PressurePlate for %s is not assigned"), *GetOwner()->GetName())
 		return TotalMass;
 	}
 
@@ -78,14 +56,3 @@ float UDoorOpening::GetTotalMassOnPressurePlate()
 	}
 	return TotalMass;
 }
-
-void UDoorOpening::PressurePlateError()
-{
-	UE_LOG(LogTemp, Error, TEXT("PressurePlate for %s is not assigned"), *GetOwner()->GetName())
-}
-
-void UDoorOpening::OwnerAssigningError()
-{
-	UE_LOG(LogTemp, Error, TEXT("Owner for %s is not assigned"), *GetOwner()->GetName())
-}
-
