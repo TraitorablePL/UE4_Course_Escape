@@ -18,9 +18,7 @@ void UGrabber::BeginPlay()
 	Super::BeginPlay();
 
 	FindPhysicsHandlerComponent();
-
 	BindActionsToInputComponent();
-
 }
 
 // Called every frame
@@ -28,28 +26,25 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (PhysicsHandler->GetGrabbedComponent()) 
+	UpdatePlayerViewPoint(); //<--
+	GrabbedObjectMovement();
+}
+
+void UGrabber::GrabbedObjectMovement()
+{
+	if (PhysicsHandler->GetGrabbedComponent())
 	{
-		//TODO Refactoring
-		//same in DetectObjectInOurReach
-		FVector PlayerViewPointLocation;
-		FRotator PlayerViewPointRotation;
-
-		FVector LineTraceEnd;
-
-		FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
-
-		GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-			OUT PlayerViewPointLocation,
-			OUT PlayerViewPointRotation
-		);
-
-		//Calculate at what position line trace end will be
-		LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector()*LineTraceReach;
-
 		//Changing grabbed object position each tick
-		PhysicsHandler->SetTargetLocation(LineTraceEnd);
+		PhysicsHandler->SetTargetLocation(GetLineTraceEnd());
 	}
+}
+
+void UGrabber::UpdatePlayerViewPoint()
+{
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT PlayerViewPointLocation,
+		OUT PlayerViewPointRotation
+	);
 }
 
 void UGrabber::BindActionsToInputComponent()
@@ -57,8 +52,6 @@ void UGrabber::BindActionsToInputComponent()
 	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 
 	if (InputComponent) {
-		UE_LOG(LogTemp, Warning, TEXT("UInputComponent is operational for %s"), *GetOwner()->GetName())
-
 		InputComponent->BindAction(TEXT("Grab"), IE_Pressed, this, &UGrabber::Grab);
 		InputComponent->BindAction(TEXT("Grab"), IE_Released, this, &UGrabber::Release);
 	}
@@ -71,54 +64,33 @@ void UGrabber::FindPhysicsHandlerComponent()
 {
 	PhysicsHandler = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
 
-	if (PhysicsHandler) {
-		UE_LOG(LogTemp, Warning, TEXT("UPhysicsHandlerComponent is operational for %s"), *GetOwner()->GetName())
-	}
-	else {
+	if (!PhysicsHandler) {
 		UE_LOG(LogTemp, Error, TEXT("Cannot find UPhysicsHandlerComponent for %s"), *GetOwner()->GetName())
 	}
 }
-
 
 FHitResult UGrabber::DetectObjectInOurReach()
 {
 	FHitResult RaycastHit;
 
-	//TODO Refactoring
-	//same in TickComponent
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
-	
-	FVector LineTraceEnd;
-
 	FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
-
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-		OUT PlayerViewPointLocation,
-		OUT PlayerViewPointRotation
-	);
-
-	//Calculate at what position line trace end will be
-	LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector()*LineTraceReach;
-
-	//DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor(0, 0, 255), false, 0, 0, 1);
 
 	//Ray-cast trace and detect it's collision with PhysicsBody
 	GetWorld()->LineTraceSingleByObjectType(
 		OUT RaycastHit,
 		PlayerViewPointLocation,
-		LineTraceEnd,
+		GetLineTraceEnd(),
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		TraceParameters
 	);
 
-	AActor *ActorHit = RaycastHit.GetActor();
-
-	//When Unreal tries to write the result of Raycasting while noting is pointed, editor is crashing
-	if (ActorHit) {
-		UE_LOG(LogTemp, Warning, TEXT("Pointing at %s"), *ActorHit->GetName())
-	}
+	//DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor(0, 0, 255), false, 0, 0, 1);
 	return RaycastHit;
+}
+
+FVector UGrabber::GetLineTraceEnd()
+{
+	return PlayerViewPointLocation + PlayerViewPointRotation.Vector()*LineTraceReach;
 }
 
 void UGrabber::Grab()
@@ -130,21 +102,19 @@ void UGrabber::Grab()
 	if (GrabbedActor) {
 		UPrimitiveComponent *GrabbedComponent = DetectObjectInOurReach().GetComponent();
 
-		GrabbedActor->GetComponentsBoundingBox().GetCenter();
 		//Calculating center point of grabbed object
 		FVector ObjectLocation = DetectObjectInOurReach().GetActor()->GetActorLocation();
 		FVector HalfHeightLocation = FVector(0,0,GrabbedActor->GetComponentsBoundingBox().GetCenter().Z);
-		FVector GrabLocation = ObjectLocation + HalfHeightLocation;
 
-		PhysicsHandler->GrabComponent(GrabbedComponent, NAME_None, GrabLocation, true);
+		FVector GrabLocation = ObjectLocation + HalfHeightLocation;
+		FRotator GrabRotation = DetectObjectInOurReach().GetActor()->GetActorRotation();
+
+		PhysicsHandler->GrabComponentAtLocationWithRotation(GrabbedComponent, NAME_None, GrabLocation, GrabRotation);
 	}
 }
-	
 
 void UGrabber::Release()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Grab key is released"))
-
 	PhysicsHandler->ReleaseComponent();
 }
-
