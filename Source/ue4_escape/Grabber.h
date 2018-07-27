@@ -31,11 +31,9 @@ public:
 
 private:
 
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
-
 	//Value that determines how far we can reach objects
 	float LineTraceReach = 200.0;
+
 	UPhysicsHandleComponent *PhysicsHandler = nullptr;
 	UInputComponent *InputComponent = nullptr;
 
@@ -51,13 +49,12 @@ private:
 	//Find if any physics handle component is attached to object
 	void FindPhysicsHandlerComponent();
 
+	//Update location of grabbed object
+	void GrabbedObjectMovement();
+
 	//Check if we're close enough to physics body
 	FHitResult DetectObjectInOurReach();
 
-	//Calculate and return pawn reach vector
-	FVector GetLineTraceEnd();
-
-	void GrabbedObjectMovement();
-
-	void UpdatePlayerViewPoint();
+	//Calculate and return Player viewpoint vector with reach vector
+	FTwoVectors GetLineTracers();
 };

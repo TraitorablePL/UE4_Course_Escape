@@ -26,7 +26,6 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	UpdatePlayerViewPoint(); //<--
 	GrabbedObjectMovement();
 }
 
@@ -35,16 +34,8 @@ void UGrabber::GrabbedObjectMovement()
 	if (PhysicsHandler->GetGrabbedComponent())
 	{
 		//Changing grabbed object position each tick
-		PhysicsHandler->SetTargetLocation(GetLineTraceEnd());
+		PhysicsHandler->SetTargetLocation(GetLineTracers().v2);
 	}
-}
-
-void UGrabber::UpdatePlayerViewPoint()
-{
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-		OUT PlayerViewPointLocation,
-		OUT PlayerViewPointRotation
-	);
 }
 
 void UGrabber::BindActionsToInputComponent()
@@ -72,14 +63,13 @@ void UGrabber::FindPhysicsHandlerComponent()
 FHitResult UGrabber::DetectObjectInOurReach()
 {
 	FHitResult RaycastHit;
-
 	FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
 
 	//Ray-cast trace and detect it's collision with PhysicsBody
 	GetWorld()->LineTraceSingleByObjectType(
 		OUT RaycastHit,
-		PlayerViewPointLocation,
-		GetLineTraceEnd(),
+		GetLineTracers().v1,
+		GetLineTracers().v2,
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		TraceParameters
 	);
@@ -88,9 +78,21 @@ FHitResult UGrabber::DetectObjectInOurReach()
 	return RaycastHit;
 }
 
-FVector UGrabber::GetLineTraceEnd()
-{
-	return PlayerViewPointLocation + PlayerViewPointRotation.Vector()*LineTraceReach;
+FTwoVectors UGrabber::GetLineTracers() {
+
+	FVector ViewPointLocation;
+	FRotator ViewPointRotation;
+	FTwoVectors LineTracers;
+
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT ViewPointLocation,
+		OUT ViewPointRotation
+	);
+
+	LineTracers.v1 = ViewPointLocation;
+	LineTracers.v2 = LineTracers.v1 + ViewPointRotation.Vector()*LineTraceReach;
+
+	return LineTracers;
 }
 
 void UGrabber::Grab()
