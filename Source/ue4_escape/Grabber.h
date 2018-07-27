@@ -29,14 +29,29 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+
 private:
 
+	//Value that determines how far we can reach objects
 	float LineTraceReach = 200.0;
 
 	UPhysicsHandleComponent *PhysicsHandler = nullptr;
 
 	UInputComponent *InputComponent = nullptr;
 
+	//Perform object grabbing action
 	void Grab();
+
+	//Perform object realeasing action
+	void Release();
+
+	//Setup input actions
+	void BindActionsToInputComponent();
+
+	//Find if any physics handle component is attached to object
+	void FindPhysicsHandlerComponent();
+
+	//Check if we're close enough to physics body
+	FHitResult DetectObjectInOurReach();
 	
 };
